@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบนักศึกษา</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Prompt',sans-serif;}
+
+body{background:#f4f6f9;}
+
+/* ===== LOGIN ===== */
+
+.login-wrapper{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.login-container{
+width:420px;
+background:white;
+padding:50px 40px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.08);
+text-align:center;
+}
+
+.logo{width:120px;margin-bottom:20px;}
+
+.title{font-size:24px;font-weight:600;margin-bottom:35px;color:#1e2a38;}
+
+.input-group{margin-bottom:20px;text-align:left;}
+
+.input-group label{font-size:14px;font-weight:500;color:#555;display:block;margin-bottom:8px;}
+
+.input-group input{
+width:100%;
+padding:14px 18px;
+border-radius:12px;
+border:1px solid #ddd;
+background:#f9fafb;
+font-size:15px;
+}
+
+.input-group input:focus{
+outline:none;
+border-color:#1e2a38;
+background:white;
+}
+
+.login-btn{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#1e2a38;
+color:white;
+font-size:16px;
+cursor:pointer;
+margin-top:10px;
+}
+
+.login-btn:hover{background:#2c3e50;}
+
+.error{color:#e74c3c;margin-top:15px;font-size:14px;}
+
+/* ===== MAIN SYSTEM ===== */
+
+#mainSystem{display:none;}
+
+.sidebar{
+position:fixed;
+width:240px;
+height:100vh;
+background:white;
+border-right:1px solid #eee;
+padding:25px;
+}
+
+.sidebar-header{text-align:center;margin-bottom:30px;}
+
+.sidebar-header img{width:70px;margin-bottom:10px;}
+
+.sidebar-header h3{font-size:16px;font-weight:600;color:#1e2a38;}
+
+.sidebar a{
+display:block;
+padding:12px;
+margin-bottom:10px;
+border-radius:8px;
+color:#444;
+cursor:pointer;
+transition:0.2s;
+}
+
+.sidebar a:hover{background:#f4f6f9;padding-left:18px;}
+
+.logout-btn{
+margin-top:20px;
+width:100%;
+padding:10px;
+border:none;
+border-radius:8px;
+background:#e74c3c;
+color:white;
+cursor:pointer;
+}
+
+.content{
+margin-left:260px;
+padding:40px;
+background:#f8fafc;
+min-height:100vh;
+}
+
+.page-title{
+font-size:24px;
+font-weight:600;
+margin-bottom:25px;
+color:#1e2a38;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.05);
+margin-bottom:20px;
+}
+.notice-box{
+background:#fff3cd;
+color:#856404;
+padding:18px;
+border-radius:12px;
+margin-bottom:25px;
+border:1px solid #ffeeba;
+}
+
+.finance-table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:14px;
+overflow:hidden;
+box-shadow:0 8px 20px rgba(0,0,0,0.05);
+}
+
+.finance-table th{
+background:#1e2a38;
+color:white;
+padding:14px;
+font-weight:500;
+font-size:14px;
+text-align:left;
+}
+
+.finance-table td{
+padding:14px;
+border-bottom:1px solid #eee;
+font-size:14px;
+}
+
+.finance-table tr:hover{
+background:#f8fafc;
+}
+
+.badge-paid{
+background:#28a745;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+}
+
+.summary-box{
+background:white;
+padding:20px;
+border-radius:14px;
+box-shadow:0 8px 20px rgba(0,0,0,0.05);
+margin-bottom:25px;
+display:flex;
+justify-content:space-between;
+}
+.term-filter{
+background:white;
+padding:20px;
+border-radius:14px;
+box-shadow:0 8px 20px rgba(0,0,0,0.05);
+margin-bottom:25px;
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+.term-filter select, .term-filter button{
+padding:10px 14px;
+border-radius:8px;
+border:1px solid #ddd;
+font-size:14px;
+}
+
+.term-filter button{
+background:#1e2a38;
+color:white;
+cursor:pointer;
+}
+
+.schedule-table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:14px;
+overflow:hidden;
+box-shadow:0 8px 20px rgba(0,0,0,0.05);
+}
+
+.schedule-table th{
+background:#1e2a38;
+color:white;
+padding:12px;
+font-size:14px;
+}
+
+.schedule-table td{
+padding:12px;
+border-bottom:1px solid #eee;
+font-size:14px;
+}
+
+.schedule-table tr:hover{
+background:#f8fafc;
+}
+
+.no-data{
+color:#e74c3c;
+margin-top:10px;
+}
+/* ============================= */
+/* 📱 Responsive Design */
+/* ============================= */
+
+/* Tablet */
+@media (max-width: 1024px){
+
+.sidebar{
+width:200px;
+}
+
+.content{
+margin-left:220px;
+padding:25px;
+}
+
+.login-container{
+width:90%;
+}
+
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Prompt',sans-serif;
+}
+
+body{
+background:#f4f6f9;
+}
+
+/* ===== APP CONTAINER ===== */
+.app-container{
+max-width:500px;
+margin:auto;
+background:white;
+min-height:100vh;
+padding:20px;
+}
+
+/* HEADER */
+.app-header{
+text-align:center;
+margin-bottom:30px;
+}
+
+.app-header img{
+width:90px;
+margin-bottom:10px;
+}
+
+.app-title{
+font-size:22px;
+font-weight:600;
+color:#1e2a38;
+}
+
+/* MENU GRID */
+.menu-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+margin-top:20px;
+}
+
+.menu-card{
+background:#f8fafc;
+padding:25px 15px;
+border-radius:16px;
+text-align:center;
+font-weight:500;
+cursor:pointer;
+transition:0.2s;
+box-shadow:0 4px 10px rgba(0,0,0,0.05);
+}
+
+.menu-card:hover{
+background:#e9eef5;
+transform:translateY(-3px);
+}
+
+/* PAGE TITLE */
+.page-title{
+font-size:20px;
+font-weight:600;
+margin-bottom:20px;
+color:#1e2a38;
+}
+
+/* CARD */
+.card{
+background:#ffffff;
+padding:20px;
+border-radius:16px;
+box-shadow:0 6px 18px rgba(0,0,0,0.06);
+margin-bottom:15px;
+}
+
+/* BUTTON */
+.primary-btn{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#1e2a38;
+color:white;
+font-size:16px;
+margin-top:15px;
+cursor:pointer;
+}
+
+.danger-btn{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#e74c3c;
+color:white;
+font-size:16px;
+margin-top:25px;
+cursor:pointer;
+}
+
+/* TABLE SCROLL */
+.table-wrapper{
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:14px;
+}
+
+th{
+background:#1e2a38;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #eee;
+}
+
+.badge{
+background:#28a745;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+}
+
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrapper" id="loginPage">
+<div class="login-container">
+<img src="logo.png" class="logo">
+<div class="title">ระบบนักศึกษา</div>
+
+<div class="input-group">
+<label>รหัสนักศึกษา</label>
+<input type="text" id="username">
+</div>
+
+<div class="input-group">
+<label>รหัสผ่าน</label>
+<input type="password" id="password">
+</div>
+
+<button class="login-btn" onclick="login()">เข้าสู่ระบบ</button>
+<div id="error" class="error"></div>
+</div>
+</div>
+
+<!-- MAIN SYSTEM -->
+<div id="mainSystem">
+
+<div class="sidebar">
+<div class="sidebar-header">
+<img src="logo.png">
+<h3>ระบบนักศึกษา</h3>
+</div>
+
+<a onclick="loadPage('home')">หน้าหลัก</a>
+<a onclick="loadPage('profile')">ข้อมูลส่วนตัว</a>
+<a onclick="loadPage('schedule')">ตรวจสอบตารางเรียน</a>
+<a onclick="loadPage('result')">ผลการเรียน</a>
+<a onclick="loadPage('finance')">ข้อมูลการชำระเงิน</a>
+<button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+</div>
+
+<div class="content" id="contentArea"></div>
+
+</div>
+
+<script>
+// ===== DATABASE USERS =====
+const users = {
+"67121440117":{
+password:"1319901050320",
+name:"นายธีรภัทร โยธิมาศ",
+studentId:"67121440117",
+major:"วิทยาการคอมพิวเตอร์",
+gpa:"3.75"
+},
+
+"67121440118":{
+password:"123456",
+name:"นางสาวพิมพ์ชนก ศรีทอง",
+studentId:"67121440118",
+major:"เทคโนโลยีสารสนเทศ",
+gpa:"3.42"
+},
+
+"67121440119":{
+password:"123456",
+name:"นายธันวา วงศ์ดี",
+studentId:"67121440119",
+major:"วิศวกรรมซอฟต์แวร์",
+gpa:"3.18"
+},
+
+"67121440120":{
+password:"123456",
+name:"นางสาวกัญญารัตน์ อินทร์สุข",
+studentId:"67121440120",
+major:"วิทยาการข้อมูล",
+gpa:"3.90"
+},
+
+"67121440121":{
+password:"123456",
+name:"นายภัทรพล ชัยชนะ",
+studentId:"67121440121",
+major:"ความมั่นคงไซเบอร์",
+gpa:"2.95"
+},
+
+"67121440122":{
+password:"123456",
+name:"นางสาวสุภัสสร แก้วคำ",
+studentId:"67121440122",
+major:"คอมพิวเตอร์ธุรกิจ",
+gpa:"3.55"
+}
+};
+
+let currentUser = null;
+
+function login(){
+
+const user=document.getElementById("username").value.trim();
+const pass=document.getElementById("password").value.trim();
+
+if(users[user] && users[user].password===pass){
+
+currentUser = users[user];
+
+document.getElementById("loginPage").style.display="none";
+document.getElementById("mainSystem").style.display="block";
+
+loadPage("home");
+
+}else{
+document.getElementById("error").innerText="ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+}
+}
+
+
+function logout(){
+document.getElementById("mainSystem").style.display="none";
+document.getElementById("loginPage").style.display="flex";
+}
+function loadSchedule(){
+
+const term=document.getElementById("termSelect").value;
+const result=document.getElementById("scheduleResult");
+
+if(term==="1/2567"){
+
+result.innerHTML=`
+
+<table class="schedule-table">
+<tr>
+<th>รหัสวิชา</th>
+<th>ชื่อวิชา</th>
+<th>หน่วยกิต</th>
+<th>อาจารย์ผู้สอน</th>
+<th>วันเวลาเรียน</th>
+<th>ห้องเรียน</th>
+</tr>
+
+<tr>
+<td>COM3101</td>
+<td>การพัฒนาเว็บแอปพลิเคชัน</td>
+<td>3(2-2-5)</td>
+<td>ดร.กิตติศักดิ์ วัฒนา</td>
+<td>จ 08:00-12:00</td>
+<td>LAB 305</td>
+</tr>
+
+<tr>
+<td>COM3202</td>
+<td>ฐานข้อมูลขั้นสูง</td>
+<td>3(2-2-5)</td>
+<td>ผศ.ณัฐพร วงศ์สันติ</td>
+<td>พ 13:00-16:00</td>
+<td>404</td>
+</tr>
+
+<tr>
+<td>GEN2103</td>
+<td>จริยธรรมในวิชาชีพคอมพิวเตอร์</td>
+<td>2(2-0-4)</td>
+<td>อ.สุภาวดี หลวงกลาง</td>
+<td>ศ 09:00-11:00</td>
+<td>ออนไลน์</td>
+</tr>
+
+</table>
+`;
+}
+
+else if(term==="2/2567"){
+
+result.innerHTML=`
+
+<table class="schedule-table">
+<tr>
+<th>รหัสวิชา</th>
+<th>ชื่อวิชา</th>
+<th>หน่วยกิต</th>
+<th>อาจารย์ผู้สอน</th>
+<th>วันเวลาเรียน</th>
+<th>ห้องเรียน</th>
+</tr>
+
+<tr>
+<td>COM3303</td>
+<td>ปัญญาประดิษฐ์เบื้องต้น</td>
+<td>3(2-2-5)</td>
+<td>ดร.ภาคภูมิ ศรีสุข</td>
+<td>อ 08:00-11:00</td>
+<td>305</td>
+</tr>
+
+<tr>
+<td>COM3401</td>
+<td>การออกแบบระบบสารสนเทศ</td>
+<td>3(2-2-5)</td>
+<td>ผศ.กมลชนก พันธ์ดี</td>
+<td>พฤ 13:00-16:00</td>
+<td>402</td>
+</tr>
+
+</table>
+`;
+}
+
+else{
+result.innerHTML=`<div class="no-data">กรุณาเลือกภาคเรียนก่อนค้นหา</div>`;
+}
+
+}
+
+function loadPage(page){
+const content=document.getElementById("contentArea");
+
+if(page==="home"){
+content.innerHTML=`
+<div class="page-title">หน้าหลัก</div>
+<div class="card">
+<p><b>ชื่อ:</b> ${currentUser.name}</p>
+<p><b>รหัสนักศึกษา:</b> ${currentUser.studentId}</p>
+<p><b>สาขา:</b> ${currentUser.major}</p>
+<p><b>GPA:</b> ${currentUser.gpa}</p>
+</div>
+`;
+}
+
+
+else if(page==="profile"){
+content.innerHTML=`
+<div class="page-title">ข้อมูลส่วนตัว</div>
+
+<div class="card">
+<h3>ข้อมูลพื้นฐาน</h3>
+<p><b>ชื่อ-สกุล:</b> นายธีรภัทร โยธิมาศ</p>
+<p><b>รหัสนักศึกษา:</b> 67121440117</p>
+<p><b>เลขบัตรประชาชน:</b> 1319901050320</p>
+<p><b>วันเกิด:</b> 10 พฤษภาคม 2546</p>
+<p><b>เพศ:</b> ชาย</p>
+<p><b>สัญชาติ:</b> ไทย</p>
+<p><b>กรุ๊ปเลือด:</b> O</p>
+</div>
+
+<div class="card">
+<h3>ข้อมูลการศึกษา</h3>
+<p><b>คณะ:</b> วิทยาศาสตร์และเทคโนโลยี</p>
+<p><b>สาขา:</b> วิทยาการคอมพิวเตอร์</p>
+<p><b>ชั้นปี:</b> ปีที่ 3</p>
+<p><b>อาจารย์ที่ปรึกษา:</b> ผศ.ณัฐพร วงศ์สันติ</p>
+<p><b>GPA:</b> 3.75</p>
+<p><b>หน่วยกิตสะสม:</b> 87 หน่วยกิต</p>
+</div>
+
+<div class="card">
+<h3>ข้อมูลติดต่อ</h3>
+<p><b>ที่อยู่:</b> จังหวัดนครราชสีมา</p>
+<p><b>รหัสไปรษณีย์:</b> 30000</p>
+<p><b>เบอร์โทร:</b> 08x-xxx-xxxx</p>
+<p><b>Email:</b> student@university.ac.th</p>
+</div>
+
+<div class="card">
+<h3>ข้อมูลผู้ปกครอง</h3>
+<p><b>ชื่อ:</b> นายสมชาย โยธิมาศ</p>
+<p><b>ความสัมพันธ์:</b> บิดา</p>
+<p><b>เบอร์โทร:</b> 08x-xxx-xxxx</p>
+<p><b>อาชีพ:</b> รับราชการ</p>
+</div>
+
+`;
+}
+
+
+else if(page==="schedule"){
+content.innerHTML=`
+
+<div class="page-title">ตรวจสอบตารางเรียน</div>
+
+<div class="term-filter">
+<label>เลือกภาคเรียน :</label>
+<select id="termSelect">
+<option value="">เลือกเทอม</option>
+<option value="1/2567">1/2567</option>
+<option value="2/2567">2/2567</option>
+</select>
+<button onclick="loadSchedule()">ค้นหาตารางเรียน</button>
+</div>
+
+<div id="scheduleResult"></div>
+
+`;
+}
+
+
+else if(page==="result"){
+
+content.innerHTML = `
+<div style="background:#e6e6e6;padding:20px;border:1px solid #aaa;margin-bottom:20px;">
+<h2 style="color:#0b3dbd;">ตรวจสอบผลการเรียนของนักศึกษา</h2>
+</div>
+
+<div style="margin-bottom:15px;">
+<button onclick="window.print()" 
+style="background:#00d4aa;color:black;padding:10px 20px;border:2px solid #0033cc;font-weight:bold;">
+พิมพ์ใบรายงานผลการเรียน
+</button>
+</div>
+
+<div style="color:red;font-weight:bold;margin-bottom:10px;">
+ช่องสัญลักษณ์ A ทางขวามือสุด = 1 ได้ประเมินการสอนดูผลการเรียนได้ = 0 ยังไม่ประเมินไม่สามารถดูผลการเรียนได้
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:14px;" border="1">
+<tr style="background:#1536b3;color:white;">
+<th>ลำดับ</th>
+<th>เทอม/ปี</th>
+<th>รหัสวิชา</th>
+<th>ชื่อวิชา</th>
+<th>Sec</th>
+<th>นก.</th>
+<th>นก.เต็ม</th>
+<th>อาจารย์ผู้สอน</th>
+<th>กลุ่มวิชา</th>
+<th>Gr.</th>
+<th>โอน/ยกเว้น</th>
+<th>A</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td>1/2567</td>
+<td>COM3101</td>
+<td>ระบบสารสนเทศเพื่อการศึกษา</td>
+<td>01</td>
+<td>3</td>
+<td>3(2-2-5)</td>
+<td>กัญญาณี สมอ</td>
+<td>เอกบังคับ</td>
+<td>A</td>
+<td></td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>1/2567</td>
+<td>COM3202</td>
+<td>คณิตศาสตร์คอมพิวเตอร์</td>
+<td>01</td>
+<td>3</td>
+<td>3(2-2-5)</td>
+<td>ปรียา งามสอาด</td>
+<td>เอกบังคับ</td>
+<td>B+</td>
+<td></td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>2/2567</td>
+<td>COM3303</td>
+<td>โครงสร้างข้อมูลและอัลกอริทึม</td>
+<td>02</td>
+<td>3</td>
+<td>3(2-2-5)</td>
+<td>ไพรเวช งามสอาด</td>
+<td>เอกบังคับ</td>
+<td>A</td>
+<td></td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>2/2567</td>
+<td>GEN2101</td>
+<td>ภาษาอังกฤษเพื่อการสื่อสาร</td>
+<td>01</td>
+<td>3</td>
+<td>3(2-2-5)</td>
+<td>ทินนภัทร สีมานนท์</td>
+<td>วิชาศึกษาทั่วไป</td>
+<td>B</td>
+<td></td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>1/2568</td>
+<td>COM3401</td>
+<td>การออกแบบระบบสารสนเทศ</td>
+<td>01</td>
+<td>3</td>
+<td>3(2-2-5)</td>
+<td>ณัฐพร วงศ์สันติ</td>
+<td>เอกบังคับ</td>
+<td>A</td>
+<td></td>
+<td>1</td>
+</tr>
+
+</table>
+
+<br>
+
+<div style="text-align:right;font-weight:bold;font-size:16px;">
+หน่วยกิตสะสม: 15 หน่วยกิต <br>
+เกรดเฉลี่ยสะสม (GPA): 3.60
+</div>
+`;
+}
+
+
+else if(page==="finance"){
+content.innerHTML=`
+
+<div class="page-title">ข้อมูลการชำระเงิน</div>
+
+<div class="summary-box">
+<div>
+<b>ยอดรวมที่ชำระแล้ว</b><br>
+<span style="font-size:20px;font-weight:600;">26,900 บาท</span>
+</div>
+
+<div>
+<b>สถานะล่าสุด</b><br>
+<span class="badge-paid">ชำระครบถ้วน</span>
+</div>
+</div>
+
+<div class="notice-box">
+กรณีนักศึกษาชำระเงินที่ธนาคารแล้วข้อมูลไม่ขึ้นภายใน 3 วัน
+ให้นำใบเสร็จจากธนาคารแจ้งฝ่ายการเงิน
+</div>
+
+<table class="finance-table">
+<tr>
+<th>ภาคเรียน</th>
+<th>เลขที่ใบเสร็จ</th>
+<th>จำนวนเงิน</th>
+<th>ประเภท</th>
+<th>วันที่ชำระ</th>
+<th>สถานะ</th>
+</tr>
+
+<tr>
+<td>1/2567</td>
+<td>67013809</td>
+<td>4,200 บาท</td>
+<td>ลงทะเบียนประจำภาคเรียน</td>
+<td>17/07/2024</td>
+<td><span class="badge-paid">ชำระแล้ว</span></td>
+</tr>
+
+<tr>
+<td>2/2567</td>
+<td>68024432</td>
+<td>7,700 บาท</td>
+<td>ลงทะเบียนประจำภาคเรียน</td>
+<td>10/09/2025</td>
+<td><span class="badge-paid">ชำระแล้ว</span></td>
+</tr>
+
+<tr>
+<td>1/2568</td>
+<td>68024432</td>
+<td>15,000 บาท</td>
+<td>ลงทะเบียนประจำภาคเรียน</td>
+<td>10/09/2025</td>
+<td><span class="badge-paid">ชำระแล้ว</span></td>
+</tr>
+
+</table>
+
+`;
+}
+
+
+}
+
+</script>
+
+</body>
+</html>
