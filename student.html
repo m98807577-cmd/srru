@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - ระบบส่งงานนักเรียน</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f0f2f5; margin: 0; }
+        .sidebar { width: 260px; height: 100vh; background: #1a252f; color: white; position: fixed; padding-top: 20px; z-index: 1000; }
+        .sidebar-link { padding: 15px 25px; display: block; color: #adb5bd; text-decoration: none; transition: 0.3s; cursor: pointer; border-left: 4px solid transparent; }
+        .sidebar-link:hover, .sidebar-link.active { background: #2c3e50; color: white; border-left-color: #2dce89; }
+        .main-content { margin-left: 260px; padding: 40px; min-height: 100vh; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.3s; }
+        .grade-badge { font-size: 3.5rem; font-weight: bold; color: #2dce89; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; position: relative; } .main-content { margin-left: 0; padding: 20px; } }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="px-4 mb-4">
+        <h4 class="fw-bold text-success"><i class="bi bi-person-badge-fill me-2"></i>Student Area</h4>
+        <p class="small text-muted" id="studentDisplay">กำลังโหลด...</p>
+    </div>
+    <a class="sidebar-link active" onclick="showSection('myAssignments', this)"><i class="bi bi-journal-text me-2"></i> งานที่ครูสั่ง</a>
+    <a class="sidebar-link" onclick="showSection('myScores', this)"><i class="bi bi-star-fill me-2"></i> คะแนนงานที่ส่ง</a>
+    <a class="sidebar-link" onclick="showSection('totalReport', this)"><i class="bi bi-file-earmark-bar-graph me-2"></i> เกรดและคะแนนรวม</a>
+    <hr class="mx-3 opacity-25">
+    <a href="index.html" class="sidebar-link text-danger" onclick="localStorage.removeItem('currentUser')">
+        <i class="bi bi-box-arrow-left me-2"></i> ออกจากระบบ
+    </a>
+</div>
+
+<div class="main-content">
+    <div id="myAssignments" class="content-section active">
+        <h3 class="fw-bold mb-4">งานที่ได้รับมอบหมาย</h3>
+        <div id="assignmentList" class="row"></div>
+    </div>
+
+    <div id="myScores" class="content-section">
+        <h3 class="fw-bold mb-4">สถานะการส่งงานและคะแนน</h3>
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr><th>ชื่องาน</th><th>วันที่ส่ง</th><th>สถานะ</th><th class="text-center">คะแนน</th></tr>
+                    </thead>
+                    <tbody id="scoreDetailBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="totalReport" class="content-section">
+        <h3 class="fw-bold mb-4">สรุปผลการเรียน</h3>
+        <div class="row g-4">
+            <div class="col-md-7">
+                <div class="card p-4 h-100">
+                    <h5 class="fw-bold mb-3">รายละเอียดคะแนน</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between py-3">คะแนนเก็บ (60) <span id="keepScore" class="fw-bold text-primary">0</span></div>
+                        <div class="list-group-item d-flex justify-content-between py-3">กลางภาค (20) <span id="midScore" class="fw-bold text-primary">0</span></div>
+                        <div class="list-group-item d-flex justify-content-between py-3">ปลายภาค (20) <span id="finalScore" class="fw-bold text-primary">0</span></div>
+                        <div class="list-group-item d-flex justify-content-between py-3 bg-light fw-bold fs-5">คะแนนรวม (100) <span id="totalScore" class="text-success">0</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card p-4 h-100 text-center d-flex flex-column justify-content-center align-items-center">
+                    <h5 class="fw-bold">เกรดที่ได้</h5>
+                    <div class="grade-badge" id="gradeDisplay">?</div>
+                    <p class="text-muted mt-2" id="gradeText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- สลับหน้าจอ ---
+    function showSection(id, element) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        element.classList.add('active');
+        
+        if(id === 'myAssignments') loadStudentAssignments();
+        if(id === 'myScores') loadMyScores();
+        if(id === 'totalReport') loadStudentScore();
+    }
+
+ function loadStudentAssignments() {
+    const container = document.getElementById('assignmentList');
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    
+    // 1. ดึงข้อมูลงาน และรายการที่นักเรียนกดลบ (Hidden)
+    const allAssignments = JSON.parse(localStorage.getItem('assignments')) || [];
+    const hiddenTasks = JSON.parse(localStorage.getItem(`hidden_${user.username}`)) || [];
+
+    // 2. กรอง "เฉพาะ" งานที่นักเรียนยังไม่ได้กดลบ (ไม่สนใจว่าส่งหรือยัง)
+    const tasksToShow = allAssignments.filter(t => 
+        !hiddenTasks.includes(t.id.toString())
+    );
+
+    // ถ้าไม่มีงานเหลือเลย
+    if (tasksToShow.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center p-5"><div class="card p-5 text-muted shadow-sm">✨ ไม่มีงานในขณะนี้</div></div>';
+        return;
+    }
+
+    // 3. ดึงข้อมูลการส่งงานมาเช็ค status เพื่อเปลี่ยนสีปุ่ม
+    const submissions = JSON.parse(localStorage.getItem('all_submissions')) || [];
+    const myFullName = user.fname + " " + user.lname;
+
+    container.innerHTML = tasksToShow.map(task => {
+        // เช็คว่างานนี้ส่งไปหรือยัง
+        const isSubmitted = submissions.some(s => s.taskId === task.id.toString() && s.studentName === myFullName);
+        
+        return `
+            <div class="col-md-6 mb-3">
+                <div class="card p-4 h-100 border-start ${isSubmitted ? 'border-primary' : 'border-success'} border-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="fw-bold text-dark mb-0">
+                            ${task.title} 
+                            ${isSubmitted ? '<span class="badge bg-primary-subtle text-primary sm-badge" style="font-size: 0.6rem;">ส่งแล้ว</span>' : ''}
+                        </h5>
+                        
+                        <button class="btn btn-link text-danger p-0 border-0" onclick="hideTask('${task.id}')" title="ลบออกจากรายการ">
+                            <i class="bi bi-x-circle fs-5"></i>
+                        </button>
+                    </div>
+                    
+                    <p class="text-secondary small mb-3 text-truncate-2">${task.detail || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted"><i class="bi bi-calendar-check me-1"></i> ${task.date}</small>
+                        <button class="btn ${isSubmitted ? 'btn-outline-primary' : 'btn-success'} btn-sm px-4 rounded-pill shadow-sm" 
+                                onclick="submitWork('${task.id}', '${task.title}')">
+                            <i class="bi ${isSubmitted ? 'bi-check2-all' : 'bi-send-fill'} me-1"></i> 
+                            ${isSubmitted ? 'ส่งเพิ่ม' : 'ส่งงาน'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+    // --- ฟังก์ชันส่งงาน ---
+    function submitWork(taskId, taskTitle) {
+        Swal.fire({
+            title: `ส่งงาน: ${taskTitle}`,
+            input: 'file',
+            inputAttributes: { 'accept': 'image/*,.pdf', 'aria-label': 'อัปโหลดงานของคุณ' },
+            showCancelButton: true,
+            confirmButtonText: 'อัปโหลดและส่งงาน',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const file = result.value;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const user = JSON.parse(localStorage.getItem('currentUser'));
+                    const submission = {
+                        subId: Date.now(),
+                        taskId: taskId,
+                        taskTitle: taskTitle,
+                        studentName: user.fname + " " + user.lname,
+                        fileData: e.target.result,
+                        fileName: file.name,
+                        submitDate: new Date().toLocaleString('th-TH'),
+                        status: 'รอตรวจ',
+                        score: 0
+                    };
+
+                    let allSub = JSON.parse(localStorage.getItem('all_submissions')) || [];
+                    allSub.push(submission);
+                    localStorage.setItem('all_submissions', JSON.stringify(allSub));
+
+                    Swal.fire('สำเร็จ!', 'ส่งงานเรียบร้อยแล้ว', 'success');
+                    loadStudentAssignments();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // --- โหลดคะแนนรายชิ้น ---
+    function loadMyScores() {
+        const body = document.getElementById('scoreDetailBody');
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        const allSub = JSON.parse(localStorage.getItem('all_submissions')) || [];
+        const myFullName = user.fname + " " + user.lname;
+        
+        const myWorks = allSub.filter(sub => sub.studentName === myFullName).reverse();
+
+        body.innerHTML = myWorks.map(sub => `
+            <tr>
+                <td><div class="fw-bold">${sub.taskTitle}</div><small class="text-muted">${sub.fileName}</small></td>
+                <td>${sub.submitDate}</td>
+                <td><span class="badge ${sub.status === 'ตรวจแล้ว' ? 'bg-success' : 'bg-warning text-dark'}">${sub.status}</span></td>
+                <td class="text-center fw-bold text-primary">${sub.status === 'ตรวจแล้ว' ? sub.score : '-'}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="4" class="text-center p-4 text-muted">ยังไม่มีประวัติการส่งงาน</td></tr>';
+    }
+
+    // --- โหลดคะแนนรวม (Sync ล่าสุดจากหน้าครู) ---
+    function loadStudentScore() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const allUsers = JSON.parse(localStorage.getItem('users')) || [];
+        const myData = allUsers.find(u => u.username === currentUser.username);
+
+        if (myData) {
+            const k = parseFloat(myData.keep) || 0, m = parseFloat(myData.mid) || 0, f = parseFloat(myData.final) || 0;
+            const total = k + m + f;
+
+            document.getElementById('keepScore').innerText = k;
+            document.getElementById('midScore').innerText = m;
+            document.getElementById('finalScore').innerText = f;
+            document.getElementById('totalScore').innerText = total;
+
+            let grade = "0", txt = "พยายามอีกนิดนะ";
+            if(total >= 80) { grade = "4"; txt = "ดีเยี่ยม!"; }
+            else if(total >= 70) { grade = "3"; txt = "ดีมาก"; }
+            else if(total >= 60) { grade = "2"; txt = "ผ่านเกณฑ์"; }
+            else if(total >= 50) { grade = "1"; txt = "เกือบผ่าน"; }
+            
+            document.getElementById('gradeDisplay').innerText = grade;
+            document.getElementById('gradeText').innerText = txt;
+        }
+    }
+
+   // ฟังก์ชันสำหรับให้นักเรียนกด "ซ่อน" งาน
+function hideTask(taskId) {
+    Swal.fire({
+        title: 'ลบงานนี้ออกจากรายการ?',
+        text: "งานจะหายไปจากหน้าจอของคุณเท่านั้น (ไม่มีผลกับเพื่อนคนอื่น)",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'ยืนยันการลบ',
+        cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            // ดึงรายการที่เคยซ่อนไว้ของนักเรียนคนนี้ออกมา
+            let hiddenTasks = JSON.parse(localStorage.getItem(`hidden_${user.username}`)) || [];
+            
+            // เพิ่ม ID ของงานนี้เข้าไปในรายการซ่อน
+            hiddenTasks.push(taskId);
+            
+            // บันทึกกลับลง LocalStorage โดยแยกตามชื่อผู้ใช้
+            localStorage.setItem(`hidden_${user.username}`, JSON.stringify(hiddenTasks));
+            
+            Swal.fire({
+                title: 'ลบเรียบร้อย!',
+                icon: 'success',
+                timer: 1000,
+                showConfirmButton: false
+            });
+
+            // สั่งให้หน้าจอโหลดรายการงานใหม่ทันที
+            loadStudentAssignments();
+        }
+    });
+}
+
+    window.onload = function() {
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!user || user.role !== 'student') {
+            window.location.href = 'index.html';
+            return;
+        }
+        document.getElementById('studentDisplay').innerText = `นักเรียน: ${user.fname} ${user.lname} (ป.${user.grade})`;
+        loadStudentAssignments();
+    };
+</script>
+</body>
+</html>
